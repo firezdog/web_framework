@@ -1,6 +1,9 @@
+from webob import Request, Response
+
 class Server:
     def __call__(self, environ, start_response):
-        response_body = b'Hello, world!'
-        status = '200 OK'
-        start_response(status, headers=[])
-        return iter([response_body])
+        # request = Request(environ)    # unused for now
+        response = Response()
+        with open('index.html') as html:
+            response.text = html.read()
+            return response(environ, start_response)
