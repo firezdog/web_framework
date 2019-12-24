@@ -1,17 +1,30 @@
 from webob import Request, Response
 
 class Server:
+    def __init__(self):
+        self.routes = {}
+    
+    def route(self, path):
+        def wrapper(handler):
+            self.routes[path] = handler
+            return handler
+        
+        return wrapper
+
+
     def __call__(self, environ, start_response):
-        request = Request(environ)    # unused for now
+        request = Request(environ)
         
         response = self.handle_request(request)
         
         return response(environ, start_response)
     
-    def handle_request(self, request):
-        user_agent = request.environ.get('HTTP_USER_AGENT', 'No user agent found')
+    def handle_request(self, req):
+        res = Response()
+        route = self.routes.get(req.path, None)
+        if route is not None:
+            route(req, res)
+        else:
+            res.text = 'Route not found.'
 
-        response = Response()
-        response.text = f'User agent: {user_agent}'
-
-        return response
+        return res
