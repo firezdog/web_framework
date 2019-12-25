@@ -21,7 +21,6 @@ class TestServer(TestCase):
     
     def test_call_with_no_route(self):
         res = self.server(self.empty_mock_env, self.mock_start_response)
-        print(res)
         self.assertIn(b'Route not found.', res)
     
     def test_call_with_route(self):

@@ -4,10 +4,10 @@ from server import Server
 app = Server()
 
 @app.route('/home')
-def home(req, res):
-    res.text = "Home page"
+def home(request, response):
+    response.text = "Home page"
 
 @app.route('/other')
-def other(req, res):
-    res.text = "Other page"
+def other(request, response):
+    response.text = "Other page"
     
