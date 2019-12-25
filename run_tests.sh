@@ -1,2 +1,2 @@
-coverage run -m unittest discover &&
+coverage run --branch -m unittest discover &&
 coverage html
