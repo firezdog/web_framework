@@ -13,11 +13,10 @@ class Server:
 
 
     def __call__(self, environ, start_response):
-        request = Request(environ)
-        
+        request = Request(environ)        
         response = self.handle_request(request)
-        
-        return response(environ, start_response)
+        res = response(environ, start_response)
+        return res
     
     def handle_request(self, req):
         res = Response()
@@ -26,5 +25,4 @@ class Server:
             route(req, res)
         else:
             res.text = 'Route not found.'
-
         return res
