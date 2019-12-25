@@ -25,7 +25,7 @@ class TestServer(TestCase):
     
     def test_call_with_route(self):
         @self.server.route('mock')
-        def mock(req, res):
+        def mock(req, res): #   pylint: disable=unused-variable
             res.text = 'mock route'
         
         res = self.server(self.mock_env, self.mock_start_response)
