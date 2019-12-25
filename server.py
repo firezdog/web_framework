@@ -18,11 +18,18 @@ class Server:
         res = response(environ, start_response)
         return res
     
+    
     def handle_request(self, req):
         res = Response()
-        route = self.routes.get(req.path, None)
-        if route is not None:
-            route(req, res)
+        handler = self.routes.get(req.path, None)
+        # as written, routes have side effects but the response itself must still be returned.
+        if handler is not None:
+            handler(req, res)
         else:
-            res.text = 'Route not found.'
+            self.default_handler(req, res)
         return res
+    
+
+    def default_handler(self, req, res):
+        res.text = "Route not found."
+        res.status_code = 404   # TODO -- test should assert that this is 404
