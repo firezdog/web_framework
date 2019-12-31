@@ -1,10 +1,16 @@
 from webob import Request, Response
 from parse import parse
 
+class Route:
+    def __init__(self, path, handler):
+        self.children = []
+        self.path = path
+        self.handler = handler
+
 
 class Server:
     def __init__(self):
-        self.routes = {}
+        self.root = Route(path='', handler=self.default_handler)
 
     ''' in an application, we write methods and decorate them with a call to route, 
         
@@ -18,13 +24,8 @@ class Server:
     '''
 
     def route(self, path):
-        dog = parse(path, '/hello/jerry')
-        try:
-            print(dog.named)
-        except:
-            pass
         def wrapper(handler):
-            self.routes[path] = handler
+            self.add_route(path, handler)
 
         return wrapper
 
@@ -35,13 +36,28 @@ class Server:
 
     def handle_request(self, request):
         response = Response()
-        handler = self.routes.get(request.path, None)
+        handler = self.get_route(request.path)
         # as written, routes have side effects but the response itself must still be returned.
         if handler is not None:
             handler(request, response)
         else:
             self.default_handler(request, response)
         return response
+
+    def get_route(self, path):
+        return self.default_handler
+
+    def add_route(self, path, handler):
+        path_structure = path.split('/')
+        parent_branch = self.root
+        current_branch = iter(self.root.children)
+        for path_item in path_structure:
+            if current_branch is None:
+                new_branch = Route(path=path_item, handler=self.default_handler)
+                parent_branch.children.append(new_branch)
+                parent_branch = new_branch
+            else:
+                pass
 
     def default_handler(self, request, response):
         response.text = "Route not found."
