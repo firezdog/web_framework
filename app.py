@@ -3,6 +3,9 @@ from server import Server
 # callable entry point for gunicorn
 app = Server()
 
+@app.route("/")
+def root(request, response):
+    response.text = "Root route"
 
 @app.route('/home')
 def home(request, response):

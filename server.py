@@ -10,20 +10,19 @@ class Route:
 
 class Server:
     def __init__(self):
-        self.root = Route(path='', handler=self.default_handler)
-
-    ''' in an application, we write methods and decorate them with a call to route, 
-        
-        [1] @app.route('path') 
-    
-    vs. just
-
-        [2] @app.route
-
-    as in the examples I find for decorators on some reference sites.  I'm not 100% clear on what's happening, but it seems like when you just write the decorator out as in [2] the function below is replaced with the return of the decorating function -- whereas the effect of [1] is also to call that function (what we desire, because then the function defined is set as the handler for that path in our route dictionary).
-    '''
+        self.root = None
 
     def route(self, path):
+        ''' in an application, we write methods and decorate them with a call to route, 
+            
+            [1] @app.route('path') 
+        
+        vs. just
+
+            [2] @app.route
+
+        as in the examples I find for decorators on some reference sites.  I'm not 100% clear on what's happening, but it seems like when you just write the decorator out as in [2] the function below is replaced with the return of the decorating function -- whereas the effect of [1] is also to call that function (what we desire, because then the function defined is set as the handler for that path in our route dictionary).
+        '''
         def wrapper(handler):
             self.add_route(path, handler)
 
@@ -45,19 +44,14 @@ class Server:
         return response
 
     def get_route(self, path):
-        return self.default_handler
+        if path == "/":
+            return self.root.handler
+        else:
+            return self.default_handler
 
     def add_route(self, path, handler):
-        path_structure = path.split('/')
-        parent_branch = self.root
-        current_branch = iter(self.root.children)
-        for path_item in path_structure:
-            if current_branch is None:
-                new_branch = Route(path=path_item, handler=self.default_handler)
-                parent_branch.children.append(new_branch)
-                parent_branch = new_branch
-            else:
-                pass
+        if path == "/":
+            self.root = Route(path, handler)
 
     def default_handler(self, request, response):
         response.text = "Route not found."
