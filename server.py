@@ -1,6 +1,7 @@
 from webob import Request, Response
 from parse import parse
 
+
 class Route:
     def __init__(self, path, handler):
         self.children = []
@@ -8,21 +9,16 @@ class Route:
         self.handler = handler
 
 
+def default_handler(request, response):
+    response.text = "Route not found."
+    response.status_code = 404
+
+
 class Server:
     def __init__(self):
-        self.root = None
+        self.root = Route(path='/', handler=default_handler)
 
     def route(self, path):
-        ''' in an application, we write methods and decorate them with a call to route, 
-            
-            [1] @app.route('path') 
-        
-        vs. just
-
-            [2] @app.route
-
-        as in the examples I find for decorators on some reference sites.  I'm not 100% clear on what's happening, but it seems like when you just write the decorator out as in [2] the function below is replaced with the return of the decorating function -- whereas the effect of [1] is also to call that function (what we desire, because then the function defined is set as the handler for that path in our route dictionary).
-        '''
         def wrapper(handler):
             self.add_route(path, handler)
 
@@ -40,20 +36,44 @@ class Server:
         if handler is not None:
             handler(request, response)
         else:
-            self.default_handler(request, response)
+            default_handler(request, response)
         return response
 
     def get_route(self, path):
+        print(path)
         if path == "/":
             return self.root.handler
         else:
-            return self.default_handler
+            path_list = path.strip('/').split('/')
+            print(path_list)
+            head = self.root
+            for branch in path_list:
+                branch_found = False
+                for child in head.children:
+                    if child.path == branch:
+                        print(f'found {child.path}')
+                        branch_found = True
+                        head = child
+                        break
+                if not branch_found:
+                    return default_handler
+            return head.handler
 
     def add_route(self, path, handler):
         if path == "/":
             self.root = Route(path, handler)
-
-    def default_handler(self, request, response):
-        response.text = "Route not found."
-        # TODO -- test should assert that this is 404?  Problem is that as far as API is concerned, response is a private variable.
-        response.status_code = 404
+        else:
+            path_list = path.strip('/').split('/')
+            head = self.root
+            for branch in path_list:
+                branch_found = False
+                for child in head.children:
+                    if child.path == branch:
+                        branch_found = True
+                        head = child
+                        break
+                if not branch_found:
+                    new_branch = Route(path=branch, handler=default_handler)
+                    head.children.append(new_branch)
+                    head = new_branch
+            head.handler = handler
