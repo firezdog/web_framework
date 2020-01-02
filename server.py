@@ -50,7 +50,6 @@ class Server:
                 branch_found = False
                 for child in head.children:
                     if child.path == branch:
-                        print(f'found {child.path}')
                         branch_found = True
                         head = child
                         break
