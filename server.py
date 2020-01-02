@@ -40,7 +40,6 @@ class Server:
         return response
 
     def get_route(self, path):
-        print(path)
         if path == "/":
             return self.root.handler
         else:
