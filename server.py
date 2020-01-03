@@ -31,10 +31,10 @@ class Server:
 
     def handle_request(self, request):
         response = Response()
-        handler = self.get_route(request.path)
+        handler, params = self.get_route(request.path)
         # as written, routes have side effects but the response itself must still be returned.
         if handler is not None:
-            handler(request, response)
+            handler(request, response, **params)
         else:
             default_handler(request, response)
         return response
@@ -44,18 +44,20 @@ class Server:
             return self.root.handler
         else:
             path_list = path.strip('/').split('/')
-            print(path_list)
             head = self.root
+            params = {}
             for branch in path_list:
                 branch_found = False
                 for child in head.children:
-                    if child.path == branch:
+                    parse_result = parse(child.path, branch)
+                    if parse_result:
+                        params.update(parse_result.named)
                         branch_found = True
                         head = child
                         break
                 if not branch_found:
                     return default_handler
-            return head.handler
+            return head.handler, params
 
     def add_route(self, path, handler):
         if path == "/":
