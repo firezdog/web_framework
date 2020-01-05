@@ -14,6 +14,10 @@ def default_handler(request, response):
     response.status_code = 404
 
 
+class RouteAlreadyExistsException(Exception):
+    pass
+
+
 class Server:
     def __init__(self):
         self.root = Route(path='/', handler=default_handler)
@@ -40,12 +44,12 @@ class Server:
         return response
 
     def get_route(self, path):
+        params = {}
         if path == "/":
-            return self.root.handler
+            return self.root.handler, params
         else:
             path_list = path.strip('/').split('/')
             head = self.root
-            params = {}
             for branch in path_list:
                 branch_found = False
                 for child in head.children:
@@ -56,7 +60,7 @@ class Server:
                         head = child
                         break
                 if not branch_found:
-                    return default_handler
+                    return default_handler, params
             return head.handler, params
 
     def add_route(self, path, handler):
@@ -76,4 +80,7 @@ class Server:
                     new_branch = Route(path=branch, handler=default_handler)
                     head.children.append(new_branch)
                     head = new_branch
-            head.handler = handler
+            if head.handler == default_handler or head.handler is None:
+                head.handler = handler
+            else:
+                raise RouteAlreadyExistsException
