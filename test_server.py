@@ -1,6 +1,5 @@
 from unittest import TestCase
 from server import Server
-from webob import Response
 
 
 def mock_start_response(status, headerlist):
@@ -29,5 +28,5 @@ class TestServer(TestCase):
         def mock(req, res):  # pylint: disable=unused-variable
             res.text = 'mock route'
 
-        res = self.server(self.mock_env, self.mock_start_response)
-        self.assertIn(b'mock route', res)
+        response = self.server(self.mock_env, self.mock_start_response)
+        self.assertIn(b'mock route', response)
